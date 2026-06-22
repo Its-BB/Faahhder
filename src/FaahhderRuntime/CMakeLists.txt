@@ -3,6 +3,9 @@ add_library(FaahhderRuntime STATIC
     src/Assets.cpp
     src/EditorModel.cpp
     src/Event.cpp
+    src/CodeWorkspace.cpp
+    src/EditorState.cpp
+    src/EditorPanels.cpp
     src/Input.cpp
     src/Math.cpp
     src/Physics.cpp

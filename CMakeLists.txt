@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 project(Faahhder
     VERSION 0.1.0
-    DESCRIPTION "A compact 2D C++ game engine"
+    DESCRIPTION "A compact 2D C++ game engine with runtime, editor, and asset packer"
     LANGUAGES CXX
 )
 
