@@ -1,0 +1,16 @@
+{
+  "name": "faahhder",
+  "version-string": "0.1.0",
+  "description": "A compact 2D C++ game engine with runtime, editor, example game, and asset packer.",
+  "dependencies": [
+    "sdl2",
+    "imgui",
+    "box2d",
+    "lua",
+    "sol2",
+    "entt",
+    "stb",
+    "glm",
+    "nlohmann-json"
+  ]
+}

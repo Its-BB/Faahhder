@@ -1,0 +1,10 @@
+build/
+out/
+.vs/
+.vscode/
+CMakeUserPresets.json
+*.user
+*.suo
+*.faahhderpack
+*.faahhderpack.manifest
+
