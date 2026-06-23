@@ -238,7 +238,7 @@ void EnsureExampleFiles(EditorApp& app) {
             "width=960\n"
             "height=540\n"
             "clear=12,14,18\n"
-            "scene=assets/scenes/editor_scene.faahhder.json\n"
+            "scene=assets/scenes/sample_scene.faahhder.json\n"
             "script=assets/scripts/starter.logic\n"
             "primary=80,210,145\n"
             "accent=255,90,105\n");
@@ -562,10 +562,10 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             CreateProject(*app);
             break;
         case IdLoadSample:
-            app->editor.LoadScene(app->projectRoot / "assets/scenes/editor_scene.faahhder.json");
+            app->editor.LoadScene(app->projectRoot / "assets/scenes/sample_scene.faahhder.json");
             app->selectedEntity = app->editor.GetScene().FindEntityByName("Player");
             RefreshAll(*app);
-            AppendConsole(*app, "Loaded saved editor scene");
+            AppendConsole(*app, "Loaded example scene");
             break;
         case IdNewScript:
             app->currentFile = "assets/scripts/starter_custom.logic";

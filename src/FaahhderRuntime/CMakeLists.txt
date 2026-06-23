@@ -3,10 +3,13 @@ add_library(FaahhderRuntime STATIC
     src/Assets.cpp
     src/EditorModel.cpp
     src/Event.cpp
+    src/TilemapAuthoring.cpp
     src/RuntimeQueries.cpp
     src/CodeWorkspace.cpp
+    src/AuthoringTools.cpp
     src/RenderPhysicsPlanning.cpp
     src/EditorState.cpp
+    src/ProjectEditing.cpp
     src/Runtime2D.cpp
     src/EditorPanels.cpp
     src/Input.cpp
