@@ -1,0 +1,4 @@
+texture|player|textures/player.ppm
+texture|tiles|textures/tiles.ppm
+spritesheet|characters|player|32|32|4|4
+spritesheet|terrain|tiles|32|32|8|8
