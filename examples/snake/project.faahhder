@@ -1,0 +1,4 @@
+name=Snake Example
+runtime=FaahhderGame
+entry=assets/snake.faahhder
+

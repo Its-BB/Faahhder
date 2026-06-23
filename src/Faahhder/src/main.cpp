@@ -34,6 +34,7 @@ enum ControlId {
     IdLoadSample,
     IdNewScript,
     IdSaveCode,
+    IdRunGame,
     IdRefresh
 };
 
@@ -42,7 +43,7 @@ struct EditorApp {
     std::filesystem::path projectRoot = ".";
     faahhder::EditorModel editor{"."};
     faahhder::EntityId selectedEntity = faahhder::InvalidEntity;
-    std::filesystem::path currentFile = "assets/project.faahhder";
+    std::filesystem::path currentFile = "assets/snake.faahhder";
     std::vector<faahhder::EntityId> hierarchyIds;
 
     HFONT uiFont = nullptr;
@@ -95,7 +96,7 @@ std::string PairValue(const std::unordered_map<std::string, std::string>& values
 }
 
 std::string SafeFileName(std::string value) {
-    if (value.empty()) value = "FaahhderProject";
+    if (value.empty()) value = "FaahhderGame";
     for (char& c : value) {
         const bool ok = (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-' || c == '_';
         if (!ok) c = '_';
@@ -136,9 +137,9 @@ std::filesystem::path FindProjectRoot() {
 }
 
 std::filesystem::path DefaultExampleProject(const std::filesystem::path& engineRoot) {
-    const auto starter = engineRoot / "examples/starter";
-    if (std::filesystem::exists(starter / "assets/project.faahhder")) {
-        return starter;
+    const auto snake = engineRoot / "examples/snake";
+    if (std::filesystem::exists(snake / "assets/snake.faahhder")) {
+        return snake;
     }
     return engineRoot;
 }
@@ -173,6 +174,14 @@ void Status(EditorApp& app, const std::string& text) {
 void AppendConsole(EditorApp& app, const std::string& message) {
     Set(app.console, WindowText(app.console) + message + "\r\n");
     Status(app, message);
+}
+
+std::filesystem::path BuiltGameExecutable(const EditorApp& app) {
+    const auto debug = app.engineRoot / "build/dev/src/FaahhderGame/Debug/FaahhderGame.exe";
+    if (std::filesystem::exists(debug)) return debug;
+    const auto release = app.engineRoot / "build/release/src/FaahhderGame/Release/FaahhderGame.exe";
+    if (std::filesystem::exists(release)) return release;
+    return debug;
 }
 
 HWND Control(HWND parent, const char* cls, const char* text, DWORD style, int id) {
@@ -227,32 +236,43 @@ void EnsureExampleFiles(EditorApp& app) {
     if (!std::filesystem::exists(projectFile)) {
         WriteTextFile(projectFile,
             "name=New Game\n"
-            "runtime=EditorOnly\n"
-            "entry=assets/project.faahhder\n");
+            "runtime=FaahhderGame\n"
+            "entry=assets/snake.faahhder\n");
     }
 
-    const auto starterConfig = app.projectRoot / "assets/project.faahhder";
-    if (!std::filesystem::exists(starterConfig)) {
-        WriteTextFile(starterConfig,
-            "title=Faahhder Starter\n"
-            "width=960\n"
-            "height=540\n"
-            "clear=12,14,18\n"
-            "scene=assets/scenes/sample_scene.faahhder.json\n"
-            "script=assets/scripts/starter.logic\n"
-            "primary=80,210,145\n"
-            "accent=255,90,105\n");
+    const auto snakeConfig = app.projectRoot / "assets/snake.faahhder";
+    if (!std::filesystem::exists(snakeConfig)) {
+        WriteTextFile(snakeConfig,
+            "title=Faahhder Snake\n"
+            "columns=28\n"
+            "rows=20\n"
+            "cell=24\n"
+            "start_length=3\n"
+            "food_score=10\n"
+            "base_speed_ms=130\n"
+            "mid_speed_ms=105\n"
+            "fast_speed_ms=80\n"
+            "mid_score=60\n"
+            "fast_score=120\n"
+            "wrap=false\n"
+            "bg=12,14,18\n"
+            "panel=22,26,34\n"
+            "grid=34,40,51\n"
+            "snake_head=80,210,145\n"
+            "snake_body=42,155,105\n"
+            "food=255,90,105\n");
     }
 
-    const auto starterLogic = app.projectRoot / "assets/scripts/starter.logic";
-    if (!std::filesystem::exists(starterLogic)) {
-        WriteTextFile(starterLogic,
-            "name=Faahhder Starter\n"
+    const auto snakeLogic = app.projectRoot / "assets/scripts/snake.logic";
+    if (!std::filesystem::exists(snakeLogic)) {
+        WriteTextFile(snakeLogic,
+            "name=Faahhder Snake\n"
             "controls=Arrow keys or WASD\n"
-            "action=Space\n"
-            "goal=Move the player, edit this file, and save changes from the editor.\n"
-            "on_update=read_input\n"
-            "on_action=log_message\n");
+            "restart=Space\n"
+            "goal=Eat food, grow longer, avoid walls and your own body.\n"
+            "on_food=grow,score\n"
+            "on_wall=game_over\n"
+            "on_self=game_over\n");
     }
 
     const auto script = app.projectRoot / "assets/scripts/player.lua";
@@ -375,7 +395,7 @@ void CreateProject(EditorApp& app) {
     app.projectRoot = app.engineRoot / "projects" / projectName;
     app.editor = faahhder::EditorModel(app.projectRoot);
     app.selectedEntity = faahhder::InvalidEntity;
-    app.currentFile = "assets/project.faahhder";
+    app.currentFile = "assets/snake.faahhder";
     EnsureExampleFiles(app);
     EnsureStarterScene(app);
     RefreshAll(app);
@@ -399,6 +419,33 @@ void OpenAsset(EditorApp& app) {
     }
 }
 
+void LaunchSandbox(EditorApp& app) {
+    const auto sandbox = BuiltGameExecutable(app);
+    if (!std::filesystem::exists(sandbox)) {
+        AppendConsole(app, "Build first: FaahhderGame.exe was not found.");
+        return;
+    }
+    const std::string args = "\"" + app.projectRoot.string() + "\"";
+    ShellExecuteA(nullptr, "open", sandbox.string().c_str(), args.c_str(), app.projectRoot.string().c_str(), SW_SHOWNORMAL);
+    AppendConsole(app, "Launched project in FaahhderGame");
+}
+
+bool CopyDirectory(const std::filesystem::path& from, const std::filesystem::path& to) {
+    if (!std::filesystem::exists(from)) return false;
+    std::filesystem::create_directories(to);
+    for (const auto& entry : std::filesystem::recursive_directory_iterator(from)) {
+        const auto relative = std::filesystem::relative(entry.path(), from);
+        const auto target = to / relative;
+        if (entry.is_directory()) {
+            std::filesystem::create_directories(target);
+        } else if (entry.is_regular_file()) {
+            std::filesystem::create_directories(target.parent_path());
+            std::filesystem::copy_file(entry.path(), target, std::filesystem::copy_options::overwrite_existing);
+        }
+    }
+    return true;
+}
+
 void Layout(HWND hwnd, EditorApp& app) {
     RECT r{};
     GetClientRect(hwnd, &r);
@@ -420,7 +467,7 @@ void Layout(HWND hwnd, EditorApp& app) {
     int x = 275;
     const int y = 12;
     const int bw = 78;
-    for (int id : {IdAddEntity, IdPlay, IdPause, IdStop, IdSaveScene, IdNewProject, IdLoadSample, IdNewScript, IdSaveCode, IdRefresh}) {
+    for (int id : {IdAddEntity, IdPlay, IdPause, IdStop, IdSaveScene, IdNewProject, IdLoadSample, IdNewScript, IdSaveCode, IdRunGame, IdRefresh}) {
         MoveWindow(GetDlgItem(hwnd, id), x, y, bw, 28, TRUE);
         x += bw + 6;
     }
@@ -487,6 +534,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         Button(hwnd, "Load Scene", IdLoadSample);
         Button(hwnd, "New Script", IdNewScript);
         Button(hwnd, "Save Code", IdSaveCode);
+        Button(hwnd, "Run Game", IdRunGame);
         Button(hwnd, "Refresh", IdRefresh);
 
         app->hierarchy = Control(hwnd, "LISTBOX", "", LBS_NOTIFY | WS_VSCROLL, IdHierarchy);
@@ -501,7 +549,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
 
         RefreshAll(*app);
         Layout(hwnd, *app);
-        AppendConsole(*app, "Edit project files in the Code Editor, then click Save Code.");
+        AppendConsole(*app, "Edit assets/snake.faahhder or assets/scripts/snake.logic, click Save Code, then Run Game.");
         return 0;
     }
     case WM_PAINT:
@@ -568,15 +616,16 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             AppendConsole(*app, "Loaded example scene");
             break;
         case IdNewScript:
-            app->currentFile = "assets/scripts/starter_custom.logic";
+            app->currentFile = "assets/scripts/snake_custom.logic";
             Set(app->code,
-                "name=Faahhder Starter\r\n"
+                "name=Faahhder Snake\r\n"
                 "controls=Arrow keys or WASD\r\n"
-                "action=Space\r\n"
-                "goal=Move the player, edit this file, and save changes from the editor.\r\n"
-                "on_update=read_input\r\n"
-                "on_action=log_message\r\n");
-            AppendConsole(*app, "Created new editable logic buffer: assets/scripts/starter_custom.logic");
+                "restart=Space\r\n"
+                "goal=Eat food, grow longer, avoid walls and your own body.\r\n"
+                "on_food=grow,score\r\n"
+                "on_wall=game_over\r\n"
+                "on_self=game_over\r\n");
+            AppendConsole(*app, "Created new editable logic buffer: assets/scripts/snake_custom.logic");
             break;
         case IdSaveCode:
             if (WriteTextFile(app->projectRoot / app->currentFile, WindowText(app->code))) {
@@ -585,6 +634,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             } else {
                 AppendConsole(*app, "Failed to save code");
             }
+            break;
+        case IdRunGame:
+            LaunchSandbox(*app);
             break;
         case IdRefresh:
             RefreshAll(*app);

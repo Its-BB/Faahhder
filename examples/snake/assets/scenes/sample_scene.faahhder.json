@@ -1,0 +1,8 @@
+{
+  "entities": [
+    {"id":1,"name":"Main Camera","x":0,"y":0,"rotation":0,"sx":1,"sy":1,"camera":true,"primary":true,"zoom":1},
+    {"id":2,"name":"Player","x":64,"y":96,"rotation":0,"sx":1,"sy":1,"texture":"player","sheet":"characters","frame":0},
+    {"id":3,"name":"Ground Tilemap","x":0,"y":0,"rotation":0,"sx":1,"sy":1}
+  ]
+}
+

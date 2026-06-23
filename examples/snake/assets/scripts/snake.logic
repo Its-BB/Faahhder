@@ -1,0 +1,8 @@
+name=Faahhder Snake
+controls=Arrow keys or WASD
+restart=Space
+goal=Eat food, grow longer, avoid walls and your own body.
+on_food=grow,score
+on_wall=game_over
+on_self=game_over
+

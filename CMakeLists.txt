@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.22)
 
 project(Faahhder
     VERSION 0.1.0
-    DESCRIPTION "A compact 2D C++ game engine with runtime, editor, and asset packer"
+    DESCRIPTION "A compact 2D C++ game engine with runtime, editor, example game, and asset packer"
     LANGUAGES CXX
 )
 
@@ -17,4 +17,5 @@ option(Faahhder_USE_LUA "Use Lua scripting when available" ON)
 
 add_subdirectory(src/FaahhderRuntime)
 add_subdirectory(src/Faahhder)
+add_subdirectory(src/FaahhderGame)
 add_subdirectory(tools/FaahhderPacker)

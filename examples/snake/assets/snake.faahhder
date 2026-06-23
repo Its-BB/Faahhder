@@ -1,0 +1,19 @@
+title=Faahhder Snake
+columns=28
+rows=20
+cell=24
+start_length=3
+food_score=10
+base_speed_ms=130
+mid_speed_ms=105
+fast_speed_ms=80
+mid_score=60
+fast_score=120
+wrap=false
+bg=12,14,18
+panel=22,26,34
+grid=34,40,51
+snake_head=80,210,145
+snake_body=42,155,105
+food=255,90,105
+
