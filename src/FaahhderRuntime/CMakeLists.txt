@@ -3,14 +3,17 @@ add_library(FaahhderRuntime STATIC
     src/Assets.cpp
     src/EditorModel.cpp
     src/Event.cpp
+    src/ExportPipeline.cpp
     src/SnakeAuthoring.cpp
     src/TilemapAuthoring.cpp
     src/RuntimeQueries.cpp
     src/CodeWorkspace.cpp
+    src/ExportTools.cpp
     src/GameplayTools.cpp
     src/AuthoringTools.cpp
     src/RenderPhysicsPlanning.cpp
     src/EditorState.cpp
+    src/Packaging.cpp
     src/ExampleProject.cpp
     src/ProjectEditing.cpp
     src/Runtime2D.cpp

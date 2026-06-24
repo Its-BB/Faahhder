@@ -35,6 +35,7 @@ enum ControlId {
     IdNewScript,
     IdSaveCode,
     IdRunGame,
+    IdBuildGame,
     IdRefresh
 };
 
@@ -446,6 +447,41 @@ bool CopyDirectory(const std::filesystem::path& from, const std::filesystem::pat
     return true;
 }
 
+void BuildProjectExecutable(EditorApp& app) {
+    if (app.currentFile != std::filesystem::path{}) {
+        WriteTextFile(app.projectRoot / app.currentFile, WindowText(app.code));
+    }
+
+    auto gameExe = BuiltGameExecutable(app);
+    if (!std::filesystem::exists(gameExe)) {
+        const auto buildScript = app.engineRoot / "scripts/build.ps1";
+        const std::string command = "powershell -ExecutionPolicy Bypass -File \"" + buildScript.string() + "\"";
+        AppendConsole(app, "Compiling FaahhderGame...");
+        std::system(command.c_str());
+        gameExe = BuiltGameExecutable(app);
+    }
+
+    if (!std::filesystem::exists(gameExe)) {
+        AppendConsole(app, "Build failed: FaahhderGame.exe was not produced.");
+        return;
+    }
+
+    const auto project = ReadPairs(app.projectRoot / "project.faahhder");
+    const std::string name = SafeFileName(PairValue(project, "name", app.projectRoot.filename().string()));
+    const auto outDir = app.engineRoot / "dist" / name;
+    std::filesystem::remove_all(outDir);
+    std::filesystem::create_directories(outDir);
+
+    std::filesystem::copy_file(gameExe, outDir / (name + ".exe"), std::filesystem::copy_options::overwrite_existing);
+    if (std::filesystem::exists(app.projectRoot / "project.faahhder")) {
+        std::filesystem::copy_file(app.projectRoot / "project.faahhder", outDir / "project.faahhder", std::filesystem::copy_options::overwrite_existing);
+    }
+    CopyDirectory(app.projectRoot / "assets", outDir / "assets");
+    WriteTextFile(outDir / "run.bat", "@echo off\r\n\"" + name + ".exe\"\r\n");
+    AppendConsole(app, "Built standalone game: " + outDir.string());
+    ShellExecuteA(nullptr, "open", outDir.string().c_str(), nullptr, outDir.string().c_str(), SW_SHOWNORMAL);
+}
+
 void Layout(HWND hwnd, EditorApp& app) {
     RECT r{};
     GetClientRect(hwnd, &r);
@@ -467,7 +503,7 @@ void Layout(HWND hwnd, EditorApp& app) {
     int x = 275;
     const int y = 12;
     const int bw = 78;
-    for (int id : {IdAddEntity, IdPlay, IdPause, IdStop, IdSaveScene, IdNewProject, IdLoadSample, IdNewScript, IdSaveCode, IdRunGame, IdRefresh}) {
+    for (int id : {IdAddEntity, IdPlay, IdPause, IdStop, IdSaveScene, IdNewProject, IdLoadSample, IdNewScript, IdSaveCode, IdRunGame, IdBuildGame, IdRefresh}) {
         MoveWindow(GetDlgItem(hwnd, id), x, y, bw, 28, TRUE);
         x += bw + 6;
     }
@@ -535,6 +571,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
         Button(hwnd, "New Script", IdNewScript);
         Button(hwnd, "Save Code", IdSaveCode);
         Button(hwnd, "Run Game", IdRunGame);
+        Button(hwnd, "Build EXE", IdBuildGame);
         Button(hwnd, "Refresh", IdRefresh);
 
         app->hierarchy = Control(hwnd, "LISTBOX", "", LBS_NOTIFY | WS_VSCROLL, IdHierarchy);
@@ -637,6 +674,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp) {
             break;
         case IdRunGame:
             LaunchSandbox(*app);
+            break;
+        case IdBuildGame:
+            BuildProjectExecutable(*app);
             break;
         case IdRefresh:
             RefreshAll(*app);
