@@ -477,7 +477,6 @@ void BuildProjectExecutable(EditorApp& app) {
         std::filesystem::copy_file(app.projectRoot / "project.faahhder", outDir / "project.faahhder", std::filesystem::copy_options::overwrite_existing);
     }
     CopyDirectory(app.projectRoot / "assets", outDir / "assets");
-    WriteTextFile(outDir / "run.bat", "@echo off\r\n\"" + name + ".exe\"\r\n");
     AppendConsole(app, "Built standalone game: " + outDir.string());
     ShellExecuteA(nullptr, "open", outDir.string().c_str(), nullptr, outDir.string().c_str(), SW_SHOWNORMAL);
 }
