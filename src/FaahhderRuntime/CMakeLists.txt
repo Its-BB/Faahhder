@@ -3,6 +3,9 @@ add_library(FaahhderRuntime STATIC
     src/Assets.cpp
     src/EditorModel.cpp
     src/Event.cpp
+    src/QualityReport.cpp
+    src/QualityTools.cpp
+    src/Diagnostics.cpp
     src/ExportPipeline.cpp
     src/SnakeAuthoring.cpp
     src/TilemapAuthoring.cpp
