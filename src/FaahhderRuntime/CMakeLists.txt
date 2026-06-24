@@ -3,6 +3,9 @@ add_library(FaahhderRuntime STATIC
     src/Assets.cpp
     src/EditorModel.cpp
     src/Event.cpp
+    src/ProjectHealth.cpp
+    src/ExportSummary.cpp
+    src/EditorPreferences.cpp
     src/QualityReport.cpp
     src/QualityTools.cpp
     src/Diagnostics.cpp
